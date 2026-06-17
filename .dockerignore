@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.env
+**/.env
+coverage
+logs
+backend/data
+backend/uploads
+*.db
+*.db-journal
+npm-debug.log*

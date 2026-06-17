@@ -1,0 +1,24 @@
+{
+  "name": "tickets-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema enterprise desacoplado para gestion de tickets e incidencias de soporte.",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm --workspace backend run dev\" \"npm --workspace frontend run dev\"",
+    "build": "npm --workspace backend run build && npm --workspace frontend run build",
+    "setup": "npm install && npm run db:init && npm run seed",
+    "db:init": "npm run migrate || npm --workspace backend run sqlite:init",
+    "seed": "npm --workspace backend run prisma:seed",
+    "migrate": "npm --workspace backend run prisma:migrate"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  position          String
+  area              String
+  active            Boolean            @default(true)
+  deleted           Boolean            @default(false)
+  failedLoginCount  Int                @default(0)
+  lockedUntil       DateTime?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  roleId            String
+  role              Role               @relation(fields: [roleId], references: [id])
+  modules           UserModule[]
+  tickets           Ticket[]           @relation("RequesterTickets")
+  assignedTickets   TicketAssignment[]
+  comments          TicketComment[]
+  notifications     Notification[]
+  sessions          Session[]
+  auditLogs         AuditLog[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  @@map("users")
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  deleted     Boolean          @default(false)
+  users       User[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  @@map("roles")
+}
+
+model Permission {
+  id    String           @id @default(cuid())
+  key   String           @unique
+  label String
+  roles RolePermission[]
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model SupportModule {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  enabled     Boolean      @default(true)
+  deleted     Boolean      @default(false)
+  users       UserModule[]
+  tickets     Ticket[]
+  createdAt   DateTime     @default(now())
+  @@map("modules")
+}
+
+model Area {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  enabled   Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@map("areas")
+}
+
+model UserModule {
+  userId   String
+  moduleId String
+  user     User          @relation(fields: [userId], references: [id])
+  module   SupportModule @relation(fields: [moduleId], references: [id])
+  @@id([userId, moduleId])
+  @@map("user_modules")
+}
+
+model TicketCategory {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  enabled Boolean  @default(true)
+  deleted Boolean  @default(false)
+  tickets Ticket[]
+  @@map("ticket_categories")
+}
+
+model TicketType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  enabled   Boolean  @default(true)
+  deleted   Boolean  @default(false)
+  tickets   Ticket[]
+  createdAt DateTime @default(now())
+  @@map("ticket_types")
+}
+
+model TicketPriority {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  color       String
+  slaHours    Int
+  enabled     Boolean   @default(true)
+  deleted     Boolean   @default(false)
+  tickets     Ticket[]
+  slaRules    SlaRule[]
+  @@map("ticket_priorities")
+}
+
+model TicketStatus {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  color   String
+  enabled Boolean  @default(true)
+  deleted Boolean  @default(false)
+  tickets Ticket[]
+  @@map("ticket_status")
+}
+
+model Ticket {
+  id             String             @id @default(cuid())
+  number         String             @unique
+  requesterId    String
+  requester      User               @relation("RequesterTickets", fields: [requesterId], references: [id])
+  requesterIp    String?
+  area           String
+  position       String
+  moduleId       String
+  module         SupportModule      @relation(fields: [moduleId], references: [id])
+  categoryId     String
+  category       TicketCategory     @relation(fields: [categoryId], references: [id])
+  typeId         String?
+  type           TicketType?        @relation(fields: [typeId], references: [id])
+  priorityId     String
+  priority       TicketPriority     @relation(fields: [priorityId], references: [id])
+  statusId       String
+  status         TicketStatus       @relation(fields: [statusId], references: [id])
+  subject        String
+  description    String
+  slaDueAt       DateTime?
+  resolvedAt     DateTime?
+  closedAt       DateTime?
+  reopenedCount  Int                @default(0)
+  deleted        Boolean            @default(false)
+  comments       TicketComment[]
+  attachments    TicketAttachment[]
+  assignments    TicketAssignment[]
+  slaEvents      SlaEvent[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  @@index([number])
+  @@index([typeId])
+  @@index([statusId, priorityId])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+model TicketComment {
+  id          String             @id @default(cuid())
+  ticketId    String
+  userId      String
+  message     String
+  internal    Boolean            @default(false)
+  ticket      Ticket             @relation(fields: [ticketId], references: [id])
+  user        User               @relation(fields: [userId], references: [id])
+  attachments TicketAttachment[]
+  createdAt   DateTime           @default(now())
+  @@map("ticket_comments")
+}
+
+model TicketAttachment {
+  id        String         @id @default(cuid())
+  ticketId  String
+  commentId String?
+  fileName  String
+  mimeType  String
+  size      Int
+  path      String
+  ticket    Ticket         @relation(fields: [ticketId], references: [id])
+  comment   TicketComment? @relation(fields: [commentId], references: [id])
+  createdAt DateTime       @default(now())
+  @@map("ticket_attachments")
+}
+
+model TicketAssignment {
+  id         String   @id @default(cuid())
+  ticketId   String
+  assigneeId String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id])
+  assignee   User     @relation(fields: [assigneeId], references: [id])
+  createdAt  DateTime @default(now())
+  @@map("ticket_assignments")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("info")
+  read      Boolean  @default(false)
+  priority  String   @default("normal")
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  @@map("notifications")
+}
+
+model SlaRule {
+  id         String         @id @default(cuid())
+  priorityId String
+  hours      Int
+  warn75     Boolean        @default(true)
+  warn90     Boolean        @default(true)
+  warn100    Boolean        @default(true)
+  priority   TicketPriority @relation(fields: [priorityId], references: [id])
+  @@map("sla_rules")
+}
+
+model SlaEvent {
+  id        String   @id @default(cuid())
+  ticketId  String
+  event     String
+  percent   Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  createdAt DateTime @default(now())
+  @@map("sla_events")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  ip          String?
+  browser     String?
+  action      String
+  module      String
+  description String
+  beforeData  String?
+  afterData   String?
+  createdAt   DateTime @default(now())
+  @@index([module, action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String   @default("")
+  subject   String
+  html      String
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("email_templates")
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+  @@map("system_settings")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @unique
+  userAgent    String?
+  ip           String?
+  expiresAt    DateTime
+  revoked      Boolean  @default(false)
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  @@map("sessions")
+}

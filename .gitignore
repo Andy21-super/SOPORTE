@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+*.db
+*.db-journal
+coverage
+.DS_Store
+logs
+*.tsbuildinfo
+backend/data
+backend/uploads
+backend/prisma/tmp-*.db

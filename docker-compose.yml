@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: "file:/app/backend/data/dev.db"
+      JWT_SECRET: "change-me-development-access-secret"
+      JWT_REFRESH_SECRET: "change-me-development-refresh-secret"
+      CORS_ORIGIN: "http://localhost:5173"
+    volumes:
+      - backend-data:/app/backend/data
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: "http://localhost:4000/api"
+      VITE_SOCKET_URL: "http://localhost:4000"
+    depends_on:
+      - backend
+volumes:
+  backend-data:
