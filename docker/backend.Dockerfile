@@ -12,6 +12,6 @@ WORKDIR /app/frontend
 RUN npm run build
 WORKDIR /app/backend
 ENV FRONTEND_DIST_DIR=/app/frontend/dist
-ENV UPLOAD_DIR=/var/data/uploads
+ENV UPLOAD_DIR=./uploads
 EXPOSE 4000
-CMD ["sh", "-c", "mkdir -p /var/data/uploads && npm run sqlite:init && npm run prisma:seed && npm run start"]
+CMD ["sh", "-c", "mkdir -p ./uploads && npm run sqlite:init && npm run prisma:seed && npm run start"]

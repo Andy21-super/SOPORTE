@@ -4,22 +4,18 @@ services:
     runtime: docker
     dockerfilePath: ./docker/backend.Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     healthCheckPath: /api/health
     autoDeployTrigger: commit
-    disk:
-      name: soporte-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 4000
       - key: DATABASE_URL
-        value: file:/var/data/soporte.db
+        value: file:./soporte.db
       - key: UPLOAD_DIR
-        value: /var/data/uploads
+        value: ./uploads
       - key: FRONTEND_DIST_DIR
         value: /app/frontend/dist
       - key: CORS_ORIGIN
