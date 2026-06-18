@@ -139,6 +139,7 @@ model Ticket {
   requesterId    String
   requester      User               @relation("RequesterTickets", fields: [requesterId], references: [id])
   requesterIp    String?
+  deviceId       String?
   area           String
   position       String
   moduleId       String

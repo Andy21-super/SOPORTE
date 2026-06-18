@@ -10,7 +10,9 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
+  const deviceId = getDeviceId();
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  config.headers['x-device-id'] = deviceId;
   return config;
 });
 

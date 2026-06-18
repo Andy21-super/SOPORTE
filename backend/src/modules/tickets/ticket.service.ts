@@ -48,6 +48,14 @@ export async function createTicket(userId: string, input: { moduleId: string; ca
   return ticket;
 }
 
+export async function getLocalPublicTickets(ip?: string) {
+  return await prisma.ticket.findMany({
+    where: ip ? { requesterIp: ip } : {},
+    include: ticketInclude,
+    orderBy: { createdAt: "desc" }
+  });
+}
+
 export async function createPublicTicket(input: {
   firstName: string;
   lastName: string;
@@ -56,7 +64,7 @@ export async function createPublicTicket(input: {
   area: string;
   description: string;
   priorityId?: string;
-}, ip?: string) {
+}, ip?: string, deviceId?: string) {
   const publicRole = await prisma.role.findUniqueOrThrow({ where: { name: "Usuario Final" } });
   const requester = await prisma.user.upsert({
     where: { email: input.email },

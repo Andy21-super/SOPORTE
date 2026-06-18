@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { getDeviceId } from "../hooks/useDeviceId";
 import type { CatalogItem, DashboardResponse, Ticket } from "../interfaces";
 import {
   addLocalPublicComment,
