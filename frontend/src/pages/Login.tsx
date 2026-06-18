@@ -9,7 +9,10 @@ import { AuthLayout } from "../components/layouts/AuthLayout";
 import { login } from "../services/auth.service";
 import { useAuthStore } from "../store/auth.store";
 
-const schema = z.object({ email: z.string().email(), password: z.string().min(8) });
+const schema = z.object({
+  email: z.string().min(1, "Ingresa tu usuario"),
+  password: z.string().min(6, "Ingresa tu contrasena")
+});
 type FormValues = z.infer<typeof schema>;
 
 export function Login() {
@@ -18,7 +21,7 @@ export function Login() {
   const [error, setError] = useState("");
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "admin@empresa.com", password: "Admin123*" }
+    defaultValues: { email: "CD.ADMIN", password: "" }
   });
 
   async function onSubmit(values: FormValues) {
@@ -33,10 +36,10 @@ export function Login() {
 
   return (
     <AuthLayout>
-      <Stack component="form" spacing={2.2} onSubmit={handleSubmit(onSubmit)}>
+      <Stack component="form" spacing={2.2} onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         {error && <Alert severity="error">{error}</Alert>}
-        <TextField label="Correo corporativo" {...register("email")} error={!!errors.email} helperText={errors.email?.message} />
-        <TextField label="Contrasena" type="password" {...register("password")} error={!!errors.password} helperText={errors.password?.message} />
+        <TextField label="Usuario" autoComplete="username" {...register("email")} error={!!errors.email} helperText={errors.email?.message} />
+        <TextField label="Contrasena" type="password" autoComplete="new-password" {...register("password")} error={!!errors.password} helperText={errors.password?.message} />
         <Button type="submit" variant="contained" size="large" startIcon={<LoginIcon />} disabled={isSubmitting}>
           Iniciar sesion
         </Button>

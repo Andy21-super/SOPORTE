@@ -7,7 +7,7 @@ import { audit } from "../audit/audit.service.js";
 
 export const authRoutes = Router();
 
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(8) });
+const loginSchema = z.object({ email: z.string().min(1), password: z.string().min(6) });
 
 authRoutes.post("/login", async (req, res, next) => {
   try {

@@ -8,8 +8,8 @@ Base URL local: `http://localhost:4000/api`
 
 ```json
 {
-  "email": "admin@empresa.com",
-  "password": "Admin123*"
+  "email": "CD.ADMIN",
+  "password": "********"
 }
 ```
 

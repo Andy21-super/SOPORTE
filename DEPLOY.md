@@ -41,8 +41,8 @@ https://soporte-tickets.onrender.com/api/health
 ## 4. Credenciales iniciales
 
 ```text
-Correo: admin@empresa.com
-Contrasena: Admin123*
+Usuario: CD.ADMIN
+Contrasena: ingresar la clave asignada al administrador
 ```
 
 Despues del primer ingreso, cambia esa contrasena.

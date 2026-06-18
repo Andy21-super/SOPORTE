@@ -2,10 +2,10 @@
 
 ## Inicio de sesion
 
-Ingresar con correo corporativo y contrasena. Usuario inicial:
+Ingresar con usuario y contrasena. Usuario inicial:
 
-- `admin@empresa.com`
-- `Admin123*`
+- `CD.ADMIN`
+- Ingresar la clave asignada al administrador
 
 ## Dashboard
 

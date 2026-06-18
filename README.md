@@ -52,8 +52,8 @@ Backend: http://localhost:4000/api/health
 
 ## Credenciales iniciales
 
-- Correo: `admin@empresa.com`
-- Contrasena: `Admin123*`
+- Usuario: `CD.ADMIN`
+- Contrasena: ingresa la clave asignada al administrador
 
 ## Nota del equipo actual
 

@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -164,12 +163,12 @@ async function main() {
     await prisma.slaRule.upsert({ where: { id: priority.id }, update: { hours: slaHours }, create: { id: priority.id, priorityId: priority.id, hours: slaHours } });
   }
 
-  const passwordHash = await bcrypt.hash("Admin123*", 12);
+  const passwordHash = "$2b$12$h8hde5mpsf18UlVVI4JAledWUX.DY3Y3inGf.s13GWrdasV/QBIDK";
   const admin = await prisma.user.upsert({
-    where: { email: "admin@empresa.com" },
+    where: { email: "CD.ADMIN" },
     update: {},
     create: {
-      email: "admin@empresa.com",
+      email: "CD.ADMIN",
       passwordHash,
       firstName: "Administrador",
       lastName: "General",
