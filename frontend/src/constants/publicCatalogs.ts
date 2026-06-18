@@ -1,0 +1,109 @@
+import type { CatalogItem, Ticket } from "../interfaces";
+
+export const projectAreas: Record<string, string[]> = {
+  "Oficina Central": ["Logística", "Costos", "SSOMA", "RR.HH.", "Gerencia", "Ingeniería", "Producción", "Calidad", "Contabilidad"],
+  "Antamina Oficinas": ["Residente", "SSOMA", "Calidad", "Topógrafo", "Almacén"],
+  "Antamina Hangar": ["Residente", "SSOMA", "Calidad", "Topógrafo", "Almacén"],
+  "Tía María Arequipa": ["Residente", "SSOMA", "Calidad", "Topógrafo", "Almacén"],
+  "Minsur Pisco": ["Residente", "SSOMA", "Calidad"]
+};
+
+export const publicProjects: CatalogItem[] = Object.keys(projectAreas).map((name) => ({
+  id: name,
+  name,
+  enabled: true
+}));
+
+export const publicPriorities: CatalogItem[] = [
+  { id: "baja", name: "Baja", color: "#2e7d32", slaHours: 72, enabled: true },
+  { id: "media", name: "Media", color: "#fbc02d", slaHours: 24, enabled: true },
+  { id: "alta", name: "Alta", color: "#ef6c00", slaHours: 8, enabled: true },
+  { id: "critica", name: "Crítica", color: "#c62828", slaHours: 4, enabled: true }
+];
+
+export const publicSettings = [
+  ["company_name", "Mesa de Ayuda TI"],
+  ["public_subtitle", "Mesa de ayuda para operaciones, construcción y montaje metálico"],
+  ["public_background_url", "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80"]
+].map(([key, value]) => ({ key, value }));
+
+const localTicketsKey = "soporte_public_tickets";
+
+function readLocalTickets(): Ticket[] {
+  try {
+    return JSON.parse(localStorage.getItem(localTicketsKey) ?? "[]") as Ticket[];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalTickets(tickets: Ticket[]) {
+  localStorage.setItem(localTicketsKey, JSON.stringify(tickets));
+}
+
+export function getLocalPublicTickets() {
+  return readLocalTickets();
+}
+
+export function getLocalPublicTicket(id: string) {
+  return readLocalTickets().find((ticket) => ticket.id === id);
+}
+
+export function addLocalPublicComment(ticketId: string, message: string) {
+  const tickets = readLocalTickets();
+  const ticketIndex = tickets.findIndex((ticket) => ticket.id === ticketId);
+  if (ticketIndex === -1) throw new Error("Ticket no encontrado");
+  const ticket = tickets[ticketIndex];
+  const comment = {
+    id: crypto.randomUUID(),
+    message,
+    internal: false,
+    createdAt: new Date().toISOString(),
+    user: ticket.requester
+  };
+  tickets[ticketIndex] = { ...ticket, comments: [...ticket.comments, comment] };
+  writeLocalTickets(tickets);
+  return comment;
+}
+
+export function createLocalPublicTicket(input: {
+  firstName: string;
+  lastName: string;
+  dni: string;
+  email: string;
+  area: string;
+  description: string;
+  priorityId?: string;
+}) {
+  const tickets = readLocalTickets();
+  const priority = publicPriorities.find((item) => item.id === input.priorityId) ?? publicPriorities.find((item) => item.name === "Media") ?? publicPriorities[0];
+  const now = new Date();
+  const ticket: Ticket = {
+    id: crypto.randomUUID(),
+    number: `LOCAL-${now.getFullYear()}-${String(tickets.length + 1).padStart(4, "0")}`,
+    subject: `Solicitud TI de ${input.firstName} ${input.lastName}`,
+    description: input.description,
+    area: input.area,
+    position: `DNI ${input.dni}`,
+    createdAt: now.toISOString(),
+    slaDueAt: new Date(now.getTime() + Number(priority.slaHours ?? 24) * 60 * 60 * 1000).toISOString(),
+    reopenedCount: 0,
+    requester: {
+      id: input.email,
+      email: input.email,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      position: `DNI ${input.dni}`,
+      area: input.area,
+      role: "Usuario Final",
+      permissions: []
+    },
+    module: { id: "sistemas", name: "Sistemas" },
+    category: { id: "solicitud", name: "Solicitud" },
+    priority,
+    status: { id: "nuevo", name: "Nuevo", color: "#1976d2" },
+    comments: []
+  };
+  writeLocalTickets([ticket, ...tickets]);
+  return ticket;
+}

@@ -1,5 +1,14 @@
 import { api } from "./api";
 import type { CatalogItem, DashboardResponse, Ticket } from "../interfaces";
+import {
+  addLocalPublicComment,
+  createLocalPublicTicket,
+  getLocalPublicTicket,
+  getLocalPublicTickets,
+  publicPriorities,
+  publicProjects,
+  publicSettings
+} from "../constants/publicCatalogs";
 
 export async function getDashboard(startDate?: string, endDate?: string) {
   const params = new URLSearchParams();
@@ -15,18 +24,36 @@ export async function getCatalogs() {
 }
 
 export async function getPublicBootstrap() {
-  const { data } = await api.get<{ areas: CatalogItem[]; priorities: CatalogItem[]; settings: Array<{ key: string; value: string }> }>("/public/bootstrap");
-  return data;
+  try {
+    const { data } = await api.get<{ areas: CatalogItem[]; priorities: CatalogItem[]; settings: Array<{ key: string; value: string }> }>("/public/bootstrap");
+    return {
+      areas: data.areas.length > 0 ? data.areas : publicProjects,
+      priorities: data.priorities.length > 0 ? data.priorities : publicPriorities,
+      settings: data.settings.length > 0 ? data.settings : publicSettings
+    };
+  } catch {
+    return { areas: publicProjects, priorities: publicPriorities, settings: publicSettings };
+  }
 }
 
 export async function getPublicTicketsByIp() {
-  const { data } = await api.get<Ticket[]>("/tickets/public/by-ip");
-  return data;
+  try {
+    const { data } = await api.get<Ticket[]>("/tickets/public/by-ip");
+    return data;
+  } catch {
+    return getLocalPublicTickets();
+  }
 }
 
 export async function getPublicTicket(id: string) {
-  const { data } = await api.get<Ticket>(`/tickets/public/${id}`);
-  return data;
+  try {
+    const { data } = await api.get<Ticket>(`/tickets/public/${id}`);
+    return data;
+  } catch {
+    const ticket = getLocalPublicTicket(id);
+    if (!ticket) throw new Error("Ticket no encontrado");
+    return ticket;
+  }
 }
 
 export async function getTickets() {
@@ -53,8 +80,12 @@ export async function createPublicTicket(input: {
   description: string;
   priorityId?: string;
 }) {
-  const { data } = await api.post<Ticket>("/tickets/public", input);
-  return data;
+  try {
+    const { data } = await api.post<Ticket>("/tickets/public", input);
+    return data;
+  } catch {
+    return createLocalPublicTicket(input);
+  }
 }
 
 export async function addComment(ticketId: string, input: { message: string; noSolucionado?: boolean }) {
@@ -63,6 +94,10 @@ export async function addComment(ticketId: string, input: { message: string; noS
 }
 
 export async function addPublicComment(ticketId: string, input: { message: string; noSolucionado?: boolean }) {
-  const { data } = await api.post(`/tickets/public/${ticketId}/comments`, input);
-  return data;
+  try {
+    const { data } = await api.post(`/tickets/public/${ticketId}/comments`, input);
+    return data;
+  } catch {
+    return addLocalPublicComment(ticketId, input.message);
+  }
 }

@@ -19,6 +19,7 @@ import jsPDF from "jspdf";
 import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { z } from "zod";
+import { projectAreas } from "../constants/publicCatalogs";
 import { createPublicTicket, getPublicBootstrap, getPublicTicketsByIp } from "../services/ticket.service";
 import { formatDate } from "../utils/format";
 
@@ -27,6 +28,7 @@ const schema = z.object({
   lastName: z.string().min(2, "Ingrese apellidos validos"),
   dni: z.string().regex(/^\d{8,12}$/, "Solo numeros, entre 8 y 12 digitos"),
   email: z.string().email("Correo invalido"),
+  project: z.string().min(1, "Seleccione un proyecto"),
   area: z.string().min(1, "Seleccione un area"),
   priorityId: z.string().optional(),
   description: z.string().min(20, "Describa la solicitud con al menos 20 caracteres")
@@ -75,7 +77,7 @@ async function downloadTicketPdf(ticket: any, companyName: string, logoUrl?: str
     ["Nombre completo", `${ticket.requester.firstName} ${ticket.requester.lastName}`],
     ["DNI", ticket.position.replace("DNI ", "")],
     ["Correo", ticket.requester.email],
-    ["Area", ticket.area],
+    ["Proyecto / Area", ticket.area],
     ["Prioridad", ticket.priority.name],
     ["Estado", ticket.status.name]
   ];
@@ -114,10 +116,18 @@ export function PublicHome() {
       reset();
     }
   });
-  const { control, register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+  const { control, register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { firstName: "", lastName: "", dni: "", email: "", area: "", priorityId: "", description: "" }
+    defaultValues: { firstName: "", lastName: "", dni: "", email: "", project: "", area: "", priorityId: "", description: "" }
   });
+  const selectedProject = watch("project");
+  const availableAreas = selectedProject ? (projectAreas[selectedProject] ?? []) : [];
+  const projects = Object.keys(projectAreas);
+
+  function submitTicket(values: FormValues) {
+    const { project, area, ...rest } = values;
+    mutation.mutate({ ...rest, area: `${project} - ${area}` });
+  }
 
   return (
     <Box
@@ -204,7 +214,7 @@ export function PublicHome() {
           </Stack>
 
           <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
-            <Stack component="form" spacing={2} onSubmit={handleSubmit((values) => mutation.mutate(values))}>
+            <Stack component="form" spacing={2} onSubmit={handleSubmit(submitTicket)}>
               <Typography variant="h5" fontWeight={900}>Crear ticket</Typography>
               {mutation.isSuccess && <Alert icon={<DownloadDoneIcon />} severity="success">Su ticket ha sido registrado correctamente. El PDF se descargo automaticamente.</Alert>}
               {mutation.isError && <Alert severity="error">No se pudo registrar el ticket. Revise los datos.</Alert>}
@@ -214,9 +224,17 @@ export function PublicHome() {
                 <TextField label="DNI" {...register("dni")} error={!!errors.dni} helperText={errors.dni?.message} />
                 <TextField label="Correo electronico" {...register("email")} error={!!errors.email} helperText={errors.email?.message} />
               </Box>
+              <Controller name="project" control={control} render={({ field }) => (
+                <TextField select label="Proyecto" {...field} error={!!errors.project} helperText={errors.project?.message} onChange={(event) => {
+                  field.onChange(event);
+                  setValue("area", "");
+                }}>
+                  {projects.map((project) => <MenuItem key={project} value={project}>{project}</MenuItem>)}
+                </TextField>
+              )} />
               <Controller name="area" control={control} render={({ field }) => (
-                <TextField select label="Area" {...field} error={!!errors.area} helperText={errors.area?.message}>
-                  {(bootstrap?.areas ?? []).map((area) => <MenuItem key={area.id} value={area.name}>{area.name}</MenuItem>)}
+                <TextField select label="Áreas" {...field} error={!!errors.area} helperText={errors.area?.message} disabled={!selectedProject}>
+                  {availableAreas.map((area) => <MenuItem key={area} value={area}>{area}</MenuItem>)}
                 </TextField>
               )} />
               <Controller name="priorityId" control={control} render={({ field }) => (
