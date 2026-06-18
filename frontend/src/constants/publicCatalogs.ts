@@ -22,7 +22,8 @@ export const publicPriorities: CatalogItem[] = [
 ];
 
 export const publicSettings = [
-  ["company_name", "Mesa de Ayuda TI"],
+  ["company_name", "CAMPAMENTOS DIOSES"],
+  ["logo_url", `${import.meta.env.BASE_URL}campamentos-dioses-logo.jpg`],
   ["public_subtitle", "Mesa de ayuda para operaciones, construcción y montaje metálico"],
   ["public_background_url", "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80"]
 ].map(([key, value]) => ({ key, value }));

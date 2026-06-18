@@ -41,9 +41,9 @@ const priorities = [
 ] as const;
 
 const defaultSettings: [string, string][] = [
-  ["company_name", "Empresa"],
+  ["company_name", "CAMPAMENTOS DIOSES"],
   ["max_upload_mb", "10"],
-  ["logo_url", ""],
+  ["logo_url", "/campamentos-dioses-logo.jpg"],
   ["favicon_url", ""],
   ["report_logo_url", ""],
   ["login_image_url", ""],
@@ -163,7 +163,7 @@ async function main() {
     await prisma.slaRule.upsert({ where: { id: priority.id }, update: { hours: slaHours }, create: { id: priority.id, priorityId: priority.id, hours: slaHours } });
   }
 
-  const passwordHash = "$2b$12$h8hde5mpsf18UlVVI4JAledWUX.DY3Y3inGf.s13GWrdasV/QBIDK";
+  const passwordHash = "$2b$12$Ouc69MMmHv/xAUmNHmwydOtYux9f9OOdFTLBhqlmnCRBVicVi8cha";
   const admin = await prisma.user.upsert({
     where: { email: "CD.ADMIN" },
     update: {},

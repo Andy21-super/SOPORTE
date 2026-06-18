@@ -1,6 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import LoginIcon from "@mui/icons-material/Login";
-import { Alert, Button, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Button, IconButton, InputAdornment, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +21,7 @@ export function Login() {
   const setSession = useAuthStore((state) => state.setSession);
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { email: "CD.ADMIN", password: "" }
@@ -39,7 +42,25 @@ export function Login() {
       <Stack component="form" spacing={2.2} onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         {error && <Alert severity="error">{error}</Alert>}
         <TextField label="Usuario" autoComplete="username" {...register("email")} error={!!errors.email} helperText={errors.email?.message} />
-        <TextField label="Contrasena" type="password" autoComplete="new-password" {...register("password")} error={!!errors.password} helperText={errors.password?.message} />
+        <TextField
+          label="Contrasena"
+          type={showPassword ? "text" : "password"}
+          autoComplete="new-password"
+          {...register("password")}
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <Tooltip title={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}>
+                  <IconButton edge="end" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}>
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
+            )
+          }}
+        />
         <Button type="submit" variant="contained" size="large" startIcon={<LoginIcon />} disabled={isSubmitting}>
           Iniciar sesion
         </Button>
