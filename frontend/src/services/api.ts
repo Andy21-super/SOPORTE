@@ -1,6 +1,6 @@
 import axios from "axios";
 import { io } from "socket.io-client";
-
+import { getDeviceId } from "../hooks/useDeviceId";
 const apiBaseURL = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? "/api" : "http://localhost:4000/api");
 const socketURL = import.meta.env.VITE_SOCKET_URL ?? (import.meta.env.PROD ? window.location.origin : "http://localhost:4000");
 

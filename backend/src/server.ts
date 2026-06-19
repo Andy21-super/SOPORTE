@@ -15,6 +15,7 @@ import { startSlaJob } from "./modules/sla/sla.job.js";
 import { uploadDir } from "./config/upload.js";
 
 const app = express();
+app.set('trust proxy', true);
 const frontendDist = path.resolve(env.FRONTEND_DIST_DIR ?? path.join(process.cwd(), "../frontend/dist"));
 const frontendIndex = path.join(frontendDist, "index.html");
 

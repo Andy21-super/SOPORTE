@@ -27,10 +27,13 @@ export async function getCatalogs() {
 export async function getPublicBootstrap() {
   try {
     const { data } = await api.get<{ areas: CatalogItem[]; priorities: CatalogItem[]; settings: Array<{ key: string; value: string }> }>("/public/bootstrap");
+    const areas = Array.isArray(data?.areas) ? data.areas : [];
+    const priorities = Array.isArray(data?.priorities) ? data.priorities : [];
+    const settings = Array.isArray(data?.settings) ? data.settings : [];
     return {
-      areas: data.areas.length > 0 ? data.areas : publicProjects,
-      priorities: data.priorities.length > 0 ? data.priorities : publicPriorities,
-      settings: data.settings.length > 0 ? data.settings : publicSettings
+      areas: areas.length > 0 ? areas : publicProjects,
+      priorities: priorities.length > 0 ? priorities : publicPriorities,
+      settings: settings.length > 0 ? settings : publicSettings
     };
   } catch {
     return { areas: publicProjects, priorities: publicPriorities, settings: publicSettings };
