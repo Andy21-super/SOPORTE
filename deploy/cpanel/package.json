@@ -5,7 +5,6 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "postinstall": "prisma generate --schema prisma/schema.prisma",
     "start": "node app.js"
   },
   "engines": {
