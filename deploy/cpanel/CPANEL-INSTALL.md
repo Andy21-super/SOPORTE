@@ -26,6 +26,8 @@ No coloque `data`, `uploads` ni `backups` dentro de `public_html`. El dominio de
 8. Pulse **Restart Application**.
 9. Compruebe `https://SU_DOMINIO/api/health`. Debe responder `{"ok":true,"service":"tickets-system-api"}`.
 
+Si el antivirus de cPanel rechaza el ZIP con una firma `Sanesecurity.Foxhole.JS_Zip`, cargue `SOPORTE-CPANEL.tar.gz` y use **Extract**. Contiene exactamente la misma aplicacion, pero evita la regla heuristica exclusiva para JavaScript dentro de ZIP.
+
 ## SQLite y archivos persistentes
 
 - Base principal: `data/soporte.db`
