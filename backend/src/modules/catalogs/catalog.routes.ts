@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { upload } from "../../config/upload.js";
+import { logoUpload, upload } from "../../config/upload.js";
 import { prisma } from "../../database/prisma.js";
 import { routeParam } from "../../helpers/params.js";
 import { authenticate, requirePermission } from "../../middlewares/auth.js";
@@ -204,7 +204,7 @@ catalogRoutes.put("/settings", async (req, res, next) => {
   }
 });
 
-catalogRoutes.post("/settings/logo", upload.single("logo"), async (req, res, next) => {
+catalogRoutes.post("/settings/logo", logoUpload.single("logo"), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ message: "Archivo de logo requerido" });
     const logoUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;

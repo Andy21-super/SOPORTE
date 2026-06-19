@@ -3,6 +3,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { Alert, Box, Button, Paper, Stack, TextField, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { getAdminCatalogs, saveSettings, uploadLogo } from "../services/admin.service";
 
 const defaults = {
@@ -52,6 +53,12 @@ export function Settings() {
     setSettings((current) => ({ ...current, [key]: value }));
   }
 
+  const logoError = logoMutation.error instanceof Error
+    ? axios.isAxiosError(logoMutation.error)
+      ? logoMutation.error.response?.data?.message ?? logoMutation.error.message
+      : logoMutation.error.message
+    : "No se pudo cargar el logo";
+
   return (
     <Stack spacing={2}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -74,14 +81,15 @@ export function Settings() {
               <input
                 hidden
                 type="file"
-                accept="image/png,image/jpeg"
+                accept="image/*"
                 onChange={(event) => {
                   const file = event.target.files?.[0];
                   if (file) logoMutation.mutate(file);
+                  event.target.value = "";
                 }}
               />
             </Button>
-            {logoMutation.isError && <Alert severity="error">No se pudo cargar el logo. Use PNG o JPG.</Alert>}
+            {logoMutation.isError && <Alert severity="error">{logoError}</Alert>}
             {settings.logo_url && <TextField label="URL del logo" value={settings.logo_url} onChange={(e) => setValue("logo_url", e.target.value)} />}
             <TextField label="Titulo portal publico" value={settings.public_title} onChange={(e) => setValue("public_title", e.target.value)} />
             <TextField label="Subtitulo portal publico" value={settings.public_subtitle} onChange={(e) => setValue("public_subtitle", e.target.value)} />

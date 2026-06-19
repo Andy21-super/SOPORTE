@@ -16,16 +16,30 @@ const allowed = new Set([
   "application/x-zip-compressed"
 ]);
 
+const storage = multer.diskStorage({
+  destination: uploadDir,
+  filename: (_req, file, cb) => {
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
+    cb(null, `${Date.now()}-${safeName}`);
+  }
+});
+
 export const upload = multer({
-  storage: multer.diskStorage({
-    destination: uploadDir,
-    filename: (_req, file, cb) => {
-      const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
-      cb(null, `${Date.now()}-${safeName}`);
-    }
-  }),
+  storage,
   limits: { fileSize: env.MAX_UPLOAD_MB * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     cb(null, allowed.has(file.mimetype));
+  }
+});
+
+export const logoUpload = multer({
+  storage,
+  limits: { fileSize: env.MAX_UPLOAD_MB * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.toLowerCase().startsWith("image/")) {
+      cb(new Error("El archivo seleccionado no es una imagen valida"));
+      return;
+    }
+    cb(null, true);
   }
 });
