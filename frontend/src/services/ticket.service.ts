@@ -1,19 +1,11 @@
 import { api } from "./api";
-import { getDeviceId } from "../hooks/useDeviceId";
 import type { CatalogItem, DashboardResponse, Ticket } from "../interfaces";
 import {
-  addLocalPublicComment,
-  addLocalAdminComment,
-  createLocalPublicTicket,
-  disableLocalTicket,
-  enableLocalTicket,
-  getLocalAdminTicket,
-  getLocalAdminTickets,
-  getLocalPublicTicket,
   getLocalPublicTickets,
   publicPriorities,
   publicProjects,
-  publicSettings
+  publicSettings,
+  removeLocalTicket
 } from "../constants/publicCatalogs";
 
 export async function getDashboard(startDate?: string, endDate?: string) {
@@ -46,43 +38,39 @@ export async function getPublicBootstrap() {
 }
 
 export async function getPublicTicketsByIp() {
-  try {
-    const { data } = await api.get<Ticket[]>("/tickets/public/by-ip");
-    return data;
-  } catch {
-    return getLocalPublicTickets();
+  const localTickets = getLocalPublicTickets();
+  for (const ticket of localTickets) {
+    try {
+      await api.post<Ticket>("/tickets/public", {
+        firstName: ticket.requester.firstName,
+        lastName: ticket.requester.lastName,
+        dni: ticket.position.replace("DNI ", ""),
+        email: ticket.requester.email,
+        area: ticket.area,
+        description: ticket.description
+      });
+      removeLocalTicket(ticket.id);
+    } catch {
+      // Se conserva localmente para reintentar sin perderlo.
+    }
   }
+  const { data } = await api.get<Ticket[]>("/tickets/public/by-ip");
+  return data;
 }
 
 export async function getPublicTicket(id: string) {
-  try {
-    const { data } = await api.get<Ticket>(`/tickets/public/${id}`);
-    return data;
-  } catch {
-    const ticket = getLocalPublicTicket(id);
-    if (!ticket) throw new Error("Ticket no encontrado");
-    return ticket;
-  }
+  const { data } = await api.get<Ticket>(`/tickets/public/${id}`);
+  return data;
 }
 
 export async function getTickets() {
-  try {
-    const { data } = await api.get<Ticket[]>("/tickets?includeDisabled=true");
-    return data;
-  } catch {
-    return getLocalAdminTickets();
-  }
+  const { data } = await api.get<Ticket[]>("/tickets?includeDisabled=true");
+  return data;
 }
 
 export async function getTicket(id: string) {
-  try {
-    const { data } = await api.get<Ticket>(`/tickets/${id}`);
-    return data;
-  } catch {
-    const ticket = getLocalAdminTicket(id);
-    if (!ticket) throw new Error("Ticket no encontrado");
-    return ticket;
-  }
+  const { data } = await api.get<Ticket>(`/tickets/${id}`);
+  return data;
 }
 
 export async function createTicket(input: { moduleId: string; categoryId: string; priorityId: string; subject: string; description: string }) {
@@ -99,46 +87,26 @@ export async function createPublicTicket(input: {
   description: string;
   priorityId?: string;
 }) {
-  try {
-    const { data } = await api.post<Ticket>("/tickets/public", input);
-    return data;
-  } catch {
-    return createLocalPublicTicket(input, getDeviceId());
-  }
+  const { data } = await api.post<Ticket>("/tickets/public", input);
+  return data;
 }
 
 export async function disableTicket(ticketId: string) {
-  try {
-    const { data } = await api.delete<Ticket>(`/tickets/${ticketId}`);
-    return data;
-  } catch {
-    return disableLocalTicket(ticketId);
-  }
+  const { data } = await api.delete<Ticket>(`/tickets/${ticketId}`);
+  return data;
 }
 
 export async function enableTicket(ticketId: string) {
-  try {
-    const { data } = await api.patch<Ticket>(`/tickets/${ticketId}/enable`);
-    return data;
-  } catch {
-    return enableLocalTicket(ticketId);
-  }
+  const { data } = await api.patch<Ticket>(`/tickets/${ticketId}/enable`);
+  return data;
 }
 
 export async function addComment(ticketId: string, input: { message: string; noSolucionado?: boolean }) {
-  try {
-    const { data } = await api.post(`/tickets/${ticketId}/comments`, input);
-    return data;
-  } catch {
-    return addLocalAdminComment(ticketId, input.message);
-  }
+  const { data } = await api.post(`/tickets/${ticketId}/comments`, input);
+  return data;
 }
 
 export async function addPublicComment(ticketId: string, input: { message: string; noSolucionado?: boolean }) {
-  try {
-    const { data } = await api.post(`/tickets/public/${ticketId}/comments`, input);
-    return data;
-  } catch {
-    return addLocalPublicComment(ticketId, input.message);
-  }
+  const { data } = await api.post(`/tickets/public/${ticketId}/comments`, input);
+  return data;
 }

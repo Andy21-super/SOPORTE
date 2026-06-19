@@ -43,7 +43,7 @@ const priorities = [
 const defaultSettings: [string, string][] = [
   ["company_name", "CAMPAMENTOS DIOSES"],
   ["max_upload_mb", "10"],
-  ["logo_url", "/campamentos-dioses-logo.jpg"],
+  ["logo_url", "/campamentos-dioses-logo-current.jpeg"],
   ["favicon_url", ""],
   ["report_logo_url", ""],
   ["login_image_url", ""],

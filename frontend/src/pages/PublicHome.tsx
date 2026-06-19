@@ -102,7 +102,7 @@ async function downloadTicketPdf(ticket: any, companyName: string, logoUrl?: str
 export function PublicHome() {
   const queryClient = useQueryClient();
   const { data: bootstrap } = useQuery({ queryKey: ["public-bootstrap"], queryFn: getPublicBootstrap });
-  const { data: tickets, isLoading } = useQuery({ queryKey: ["public-tickets-ip"], queryFn: getPublicTicketsByIp, refetchInterval: 20000 });
+  const { data: tickets, isLoading, isError: ticketsError } = useQuery({ queryKey: ["public-tickets-ip"], queryFn: getPublicTicketsByIp, refetchInterval: 20000 });
   const settings = settingsMap(bootstrap?.settings);
   const companyName = settings.company_name ?? "CAMPAMENTOS DIOSES";
   const logoUrl = settings.logo_url;
@@ -191,6 +191,7 @@ export function PublicHome() {
                 {description}
               </Typography>
             </Box>
+            {ticketsError && <Alert severity="warning">No se pudo consultar la base de datos en este momento. Sus tickets no han sido eliminados.</Alert>}
 
             <Paper sx={{ p: 2.5, bgcolor: "rgba(255,255,255,.94)", borderRadius: 2 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>

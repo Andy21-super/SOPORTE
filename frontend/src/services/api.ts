@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { io } from "socket.io-client";
 import { getDeviceId } from "../hooks/useDeviceId";
 
@@ -27,6 +27,43 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   config.headers['x-device-id'] = deviceId;
   return config;
+});
+
+type RetryRequest = InternalAxiosRequestConfig & { _retry?: boolean };
+let refreshRequest: Promise<string> | null = null;
+
+function clearSession() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+}
+
+api.interceptors.response.use(undefined, async (error: AxiosError) => {
+  const request = error.config as RetryRequest | undefined;
+  const refreshToken = localStorage.getItem("refreshToken");
+  const isAuthRequest = request?.url?.includes("/auth/login") || request?.url?.includes("/auth/refresh");
+  if (error.response?.status !== 401 || !request || request._retry || !refreshToken || isAuthRequest) {
+    return Promise.reject(error);
+  }
+
+  request._retry = true;
+  try {
+    refreshRequest ??= axios.post<{ accessToken: string }>(`${apiBaseURL}/auth/refresh`, { refreshToken })
+      .then(({ data }) => {
+        localStorage.setItem("accessToken", data.accessToken);
+        return data.accessToken;
+      })
+      .finally(() => { refreshRequest = null; });
+    const accessToken = await refreshRequest;
+    request.headers.Authorization = `Bearer ${accessToken}`;
+    return api(request);
+  } catch (refreshError) {
+    clearSession();
+    if (!window.location.pathname.endsWith("/login")) {
+      window.location.assign(`${import.meta.env.BASE_URL}login`);
+    }
+    return Promise.reject(refreshError);
+  }
 });
 
 export const socket = io(socketURL, {

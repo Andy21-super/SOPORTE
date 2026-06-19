@@ -11,3 +11,9 @@ export function signAccessToken(user: AuthUser) {
 export function signRefreshToken(userId: string) {
   return jwt.sign({ sub: userId }, env.JWT_REFRESH_SECRET, { expiresIn: env.REFRESH_TOKEN_DAYS * 24 * 60 * 60 });
 }
+
+export function verifyRefreshToken(token: string) {
+  const payload = jwt.verify(token, env.JWT_REFRESH_SECRET);
+  if (typeof payload === "string" || typeof payload.sub !== "string") throw new Error("Refresh token invalido");
+  return payload.sub;
+}

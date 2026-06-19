@@ -23,7 +23,7 @@ export const publicPriorities: CatalogItem[] = [
 
 export const publicSettings = [
   ["company_name", "CAMPAMENTOS DIOSES"],
-  ["logo_url", `${import.meta.env.BASE_URL}campamentos-dioses-logo-transparent.png`],
+  ["logo_url", `${import.meta.env.BASE_URL}campamentos-dioses-logo-current.jpeg`],
   ["public_title", "Panel publico de soporte TI"],
   ["public_subtitle", "Mesa de ayuda para operaciones, construcción y montaje metálico"],
   ["public_description", "Registre incidencias, solicitudes de acceso, equipos, sistemas o conectividad. Sus tickets creados desde este computador aparecen aqui automaticamente."],
@@ -54,6 +54,10 @@ function writeLocalTickets(tickets: Ticket[]) {
 
 export function getLocalPublicTickets() {
   return readLocalTickets().filter((ticket) => !ticket.deleted);
+}
+
+export function removeLocalTicket(id: string) {
+  writeLocalTickets(readLocalTickets().filter((ticket) => ticket.id !== id));
 }
 
 export function getLocalAdminTickets() {

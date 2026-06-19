@@ -1,6 +1,7 @@
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import RestoreIcon from "@mui/icons-material/Restore";
 import {
+  Alert,
   Chip,
   IconButton,
   Paper,
@@ -55,7 +56,7 @@ function IpLocation({ ip }: { ip?: string }) {
 export function Tickets() {
   const [filter, setFilter] = useState<TicketFilter>("active");
   const queryClient = useQueryClient();
-  const { data = [] } = useQuery({ queryKey: ["tickets"], queryFn: getTickets });
+  const { data = [], isError, isLoading } = useQuery({ queryKey: ["tickets"], queryFn: getTickets, refetchInterval: 20000 });
   const disableMutation = useMutation({
     mutationFn: disableTicket,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tickets"] })
@@ -85,6 +86,8 @@ export function Tickets() {
           <ToggleButton value="all">Todos</ToggleButton>
         </ToggleButtonGroup>
       </Stack>
+      {isError && <Alert severity="error">No se pudo consultar la base de datos. Los tickets existentes se mantienen guardados; vuelva a intentar en unos segundos.</Alert>}
+      {isLoading && <Alert severity="info">Consultando incidencias guardadas...</Alert>}
       <Paper variant="outlined">
         <Table>
           <TableHead>
