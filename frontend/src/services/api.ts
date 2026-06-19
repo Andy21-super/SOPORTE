@@ -11,7 +11,9 @@ const apiBaseURL = !isLocalConfigured && configuredApiURL
   : import.meta.env.PROD
     ? `${renderURL}/api`
     : "http://localhost:4000/api";
-const socketURL = !isLocalConfigured && configuredSocketURL
+const socketURL = configuredSocketURL === "same-origin"
+  ? window.location.origin
+  : !isLocalConfigured && configuredSocketURL
   ? configuredSocketURL
   : import.meta.env.PROD
     ? renderURL

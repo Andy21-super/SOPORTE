@@ -11,3 +11,4 @@ logs
 backend/data
 backend/uploads
 backend/prisma/tmp-*.db
+release/
