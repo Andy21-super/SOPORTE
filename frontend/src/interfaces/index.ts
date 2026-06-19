@@ -25,6 +25,9 @@ export interface Ticket {
   description: string;
   area: string;
   position: string;
+  requesterIp?: string;
+  deviceId?: string;
+  deleted?: boolean;
   createdAt: string;
   slaDueAt?: string;
   reopenedCount: number;

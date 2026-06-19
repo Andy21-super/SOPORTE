@@ -65,7 +65,7 @@ async function downloadTicketPdf(ticket: any, companyName: string, logoUrl?: str
   }
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
-  doc.text(companyName || "Mesa de Ayuda TI", logoUrl ? 40 : 18, 17);
+  doc.text(companyName || "CAMPAMENTOS DIOSES", logoUrl ? 40 : 18, 17);
   doc.setTextColor(18, 53, 91);
   doc.setFontSize(15);
   doc.text("CONSTANCIA DE REGISTRO DE TICKET", 18, 46);
@@ -104,7 +104,7 @@ export function PublicHome() {
   const { data: bootstrap } = useQuery({ queryKey: ["public-bootstrap"], queryFn: getPublicBootstrap });
   const { data: tickets, isLoading } = useQuery({ queryKey: ["public-tickets-ip"], queryFn: getPublicTicketsByIp, refetchInterval: 20000 });
   const settings = settingsMap(bootstrap?.settings);
-  const companyName = settings.company_name ?? "Mesa de Ayuda TI";
+  const companyName = settings.company_name ?? "CAMPAMENTOS DIOSES";
   const logoUrl = settings.logo_url;
   const subtitle = settings.public_subtitle ?? "Mesa de ayuda para operaciones, construccion y montaje metalico";
   const backgroundUrl = settings.public_background_url ?? "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80";
@@ -143,7 +143,19 @@ export function PublicHome() {
       <Box sx={{ maxWidth: 1280, mx: "auto", px: { xs: 2, md: 4 }, py: 3 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            {logoUrl ? <Box component="img" src={logoUrl} alt={companyName} sx={{ width: 48, height: 48, objectFit: "contain", bgcolor: "white", borderRadius: 1, p: .5 }} /> : null}
+            {logoUrl ? (
+              <Box
+                component="img"
+                src={logoUrl}
+                alt={companyName}
+                sx={{
+                  width: { xs: 96, sm: 128 },
+                  height: { xs: 64, sm: 82 },
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 10px 18px rgba(0,0,0,.28))"
+                }}
+              />
+            ) : null}
             <Box>
               <Typography variant="h5" fontWeight={900}>{companyName}</Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,.72)" }}>{subtitle}</Typography>

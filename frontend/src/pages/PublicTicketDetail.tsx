@@ -25,7 +25,7 @@ export function PublicTicketDetail() {
   const queryClient = useQueryClient();
   const { data: bootstrap } = useQuery({ queryKey: ["public-bootstrap"], queryFn: getPublicBootstrap });
   const settings = settingsMap(bootstrap?.settings);
-  const companyName = settings.company_name ?? "Mesa de Ayuda TI";
+  const companyName = settings.company_name ?? "CAMPAMENTOS DIOSES";
   const logoUrl = settings.logo_url;
   const { data: ticket, isError } = useQuery({ queryKey: ["public-ticket", id], queryFn: () => getPublicTicket(id), enabled: !!id, refetchInterval: 20000 });
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({

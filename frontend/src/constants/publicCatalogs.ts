@@ -23,12 +23,20 @@ export const publicPriorities: CatalogItem[] = [
 
 export const publicSettings = [
   ["company_name", "CAMPAMENTOS DIOSES"],
-  ["logo_url", `${import.meta.env.BASE_URL}campamentos-dioses-logo.jpg`],
+  ["logo_url", `${import.meta.env.BASE_URL}campamentos-dioses-logo-transparent.png`],
   ["public_subtitle", "Mesa de ayuda para operaciones, construcción y montaje metálico"],
   ["public_background_url", "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80"]
 ].map(([key, value]) => ({ key, value }));
 
 const localTicketsKey = "soporte_public_tickets";
+
+export function splitProjectArea(value = "") {
+  const [project, ...areaParts] = value.split(" - ");
+  return {
+    project: project || value,
+    area: areaParts.join(" - ") || ""
+  };
+}
 
 function readLocalTickets(): Ticket[] {
   try {
@@ -43,11 +51,22 @@ function writeLocalTickets(tickets: Ticket[]) {
 }
 
 export function getLocalPublicTickets() {
-  return readLocalTickets();
+  return readLocalTickets().filter((ticket) => !ticket.deleted);
+}
+
+export function getLocalAdminTickets() {
+  return readLocalTickets().filter((ticket) => !ticket.deleted);
 }
 
 export function getLocalPublicTicket(id: string) {
-  return readLocalTickets().find((ticket) => ticket.id === id);
+  return readLocalTickets().find((ticket) => ticket.id === id && !ticket.deleted);
+}
+
+export function disableLocalTicket(id: string) {
+  const tickets = readLocalTickets();
+  const updated = tickets.map((ticket) => ticket.id === id ? { ...ticket, deleted: true } : ticket);
+  writeLocalTickets(updated);
+  return updated.find((ticket) => ticket.id === id);
 }
 
 export function addLocalPublicComment(ticketId: string, message: string) {
@@ -75,17 +94,21 @@ export function createLocalPublicTicket(input: {
   area: string;
   description: string;
   priorityId?: string;
-}) {
+}, deviceId?: string) {
   const tickets = readLocalTickets();
   const priority = publicPriorities.find((item) => item.id === input.priorityId) ?? publicPriorities.find((item) => item.name === "Media") ?? publicPriorities[0];
   const now = new Date();
+  const { project } = splitProjectArea(input.area);
   const ticket: Ticket = {
     id: crypto.randomUUID(),
     number: `LOCAL-${now.getFullYear()}-${String(tickets.length + 1).padStart(4, "0")}`,
-    subject: `Solicitud TI de ${input.firstName} ${input.lastName}`,
+    subject: `${project} - Solicitud TI de ${input.firstName} ${input.lastName}`,
     description: input.description,
     area: input.area,
     position: `DNI ${input.dni}`,
+    requesterIp: deviceId,
+    deviceId,
+    deleted: false,
     createdAt: now.toISOString(),
     slaDueAt: new Date(now.getTime() + Number(priority.slaHours ?? 24) * 60 * 60 * 1000).toISOString(),
     reopenedCount: 0,

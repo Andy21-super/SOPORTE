@@ -30,13 +30,13 @@ export function AuthLayout({ children }: PropsWithChildren) {
             Portal publico
           </Button>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            {logoUrl ? <Box component="img" src={logoUrl} alt={companyName} sx={{ width: 52, height: 52, objectFit: "contain" }} /> : null}
+            {logoUrl ? <Box component="img" src={logoUrl} alt={companyName} sx={{ width: 96, height: 64, objectFit: "contain" }} /> : null}
             <Box>
               <Typography variant="h4" fontWeight={900} color="primary">
                 {companyName}
               </Typography>
               <Typography color="text.secondary">
-                Acceso administrativo de Mesa de Ayuda TI
+                Acceso administrativo de CAMPAMENTOS DIOSES
               </Typography>
             </Box>
           </Stack>

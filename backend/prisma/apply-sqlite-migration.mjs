@@ -49,6 +49,7 @@ try {
   addColumn(db, "ticket_categories", "deleted", "BOOLEAN NOT NULL DEFAULT false");
   addColumn(db, "ticket_priorities", "deleted", "BOOLEAN NOT NULL DEFAULT false");
   addColumn(db, "ticket_status", "deleted", "BOOLEAN NOT NULL DEFAULT false");
+  addColumn(db, "tickets", "deviceId", "TEXT");
   addColumn(db, "audit_logs", "browser", "TEXT");
   addColumn(db, "audit_logs", "beforeData", "TEXT");
   addColumn(db, "audit_logs", "afterData", "TEXT");

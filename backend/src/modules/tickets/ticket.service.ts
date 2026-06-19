@@ -21,6 +21,10 @@ function normalizeText(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+function projectFromArea(value: string) {
+  return value.split(" - ")[0] || value;
+}
+
 export async function createTicket(userId: string, input: { moduleId: string; categoryId: string; typeId?: string; priorityId: string; subject: string; description: string }, ip?: string) {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const priority = await prisma.ticketPriority.findUniqueOrThrow({ where: { id: input.priorityId } });
@@ -50,7 +54,7 @@ export async function createTicket(userId: string, input: { moduleId: string; ca
 
 export async function getLocalPublicTickets(ip?: string) {
   return await prisma.ticket.findMany({
-    where: ip ? { requesterIp: ip } : {},
+    where: ip ? { requesterIp: ip, deleted: false } : { deleted: false },
     include: ticketInclude,
     orderBy: { createdAt: "desc" }
   });
@@ -100,13 +104,14 @@ export async function createPublicTicket(input: {
       number: await ticketNumber(),
       requesterId: requester.id,
       requesterIp: ip,
+      deviceId,
       area: input.area,
       position: requester.position,
       moduleId: module.id,
       categoryId: category.id,
       priorityId: priority.id,
       statusId: status.id,
-      subject: `Solicitud TI de ${input.firstName} ${input.lastName}`,
+      subject: `${projectFromArea(input.area)} - Solicitud TI de ${input.firstName} ${input.lastName}`,
       description: input.description,
       slaDueAt: new Date(Date.now() + priority.slaHours * 60 * 60 * 1000)
     },
@@ -147,6 +152,17 @@ export async function updateTicket(ticketId: string, input: { statusId?: string;
   }
   await audit({ userId, ip, action: "UPDATE", module: "tickets", description: `Ticket ${ticket.number} actualizado` });
   getIo()?.emit("ticket:updated", ticket);
+  return ticket;
+}
+
+export async function disableTicket(ticketId: string, userId: string, ip?: string) {
+  const ticket = await prisma.ticket.update({
+    where: { id: ticketId },
+    data: { deleted: true },
+    include: ticketInclude
+  });
+  await audit({ userId, ip, action: "DISABLE", module: "tickets", description: `Ticket ${ticket.number} deshabilitado` });
+  getIo()?.emit("ticket:disabled", ticket);
   return ticket;
 }
 

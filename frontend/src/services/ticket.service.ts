@@ -4,6 +4,8 @@ import type { CatalogItem, DashboardResponse, Ticket } from "../interfaces";
 import {
   addLocalPublicComment,
   createLocalPublicTicket,
+  disableLocalTicket,
+  getLocalAdminTickets,
   getLocalPublicTicket,
   getLocalPublicTickets,
   publicPriorities,
@@ -61,13 +63,23 @@ export async function getPublicTicket(id: string) {
 }
 
 export async function getTickets() {
-  const { data } = await api.get<Ticket[]>("/tickets");
-  return data;
+  try {
+    const { data } = await api.get<Ticket[]>("/tickets");
+    return data;
+  } catch {
+    return getLocalAdminTickets();
+  }
 }
 
 export async function getTicket(id: string) {
-  const { data } = await api.get<Ticket>(`/tickets/${id}`);
-  return data;
+  try {
+    const { data } = await api.get<Ticket>(`/tickets/${id}`);
+    return data;
+  } catch {
+    const ticket = getLocalPublicTicket(id);
+    if (!ticket) throw new Error("Ticket no encontrado");
+    return ticket;
+  }
 }
 
 export async function createTicket(input: { moduleId: string; categoryId: string; priorityId: string; subject: string; description: string }) {
@@ -88,13 +100,26 @@ export async function createPublicTicket(input: {
     const { data } = await api.post<Ticket>("/tickets/public", input);
     return data;
   } catch {
-    return createLocalPublicTicket(input);
+    return createLocalPublicTicket(input, getDeviceId());
+  }
+}
+
+export async function disableTicket(ticketId: string) {
+  try {
+    const { data } = await api.delete<Ticket>(`/tickets/${ticketId}`);
+    return data;
+  } catch {
+    return disableLocalTicket(ticketId);
   }
 }
 
 export async function addComment(ticketId: string, input: { message: string; noSolucionado?: boolean }) {
-  const { data } = await api.post(`/tickets/${ticketId}/comments`, input);
-  return data;
+  try {
+    const { data } = await api.post(`/tickets/${ticketId}/comments`, input);
+    return data;
+  } catch {
+    return addLocalPublicComment(ticketId, input.message);
+  }
 }
 
 export async function addPublicComment(ticketId: string, input: { message: string; noSolucionado?: boolean }) {

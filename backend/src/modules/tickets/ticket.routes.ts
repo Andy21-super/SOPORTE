@@ -1,16 +1,25 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import { prisma } from "../../database/prisma.js";
 import { upload } from "../../config/upload.js";
 import { routeParam } from "../../helpers/params.js";
 import { authenticate, requirePermission } from "../../middlewares/auth.js";
-import { addComment, createPublicTicket, createTicket, ticketInclude, updateTicket } from "./ticket.service.js";
+import { addComment, createPublicTicket, createTicket, disableTicket, ticketInclude, updateTicket } from "./ticket.service.js";
 import { commentSchema, createTicketSchema, publicTicketSchema, updateTicketSchema } from "./ticket.validators.js";
 
 export const ticketRoutes = Router();
 
+function deviceId(req: Request) {
+  return req.get("x-device-id")?.trim() || undefined;
+}
+
+function publicRequesterWhere(req: Request) {
+  const id = deviceId(req);
+  return id ? { deleted: false, deviceId: id } : { deleted: false, requesterIp: req.ip };
+}
+
 ticketRoutes.get("/public/by-ip", async (req, res) => {
   const tickets = await prisma.ticket.findMany({
-    where: { deleted: false, requesterIp: req.ip },
+    where: publicRequesterWhere(req),
     include: {
       ...ticketInclude,
       comments: {
@@ -27,7 +36,7 @@ ticketRoutes.get("/public/by-ip", async (req, res) => {
 
 ticketRoutes.post("/public", async (req, res, next) => {
   try {
-    res.status(201).json(await createPublicTicket(publicTicketSchema.parse(req.body), req.ip));
+    res.status(201).json(await createPublicTicket(publicTicketSchema.parse(req.body), req.ip, deviceId(req)));
   } catch (error) {
     next(error);
   }
@@ -35,7 +44,7 @@ ticketRoutes.post("/public", async (req, res, next) => {
 
 ticketRoutes.get("/public/:id", async (req, res) => {
   const ticket = await prisma.ticket.findFirst({
-    where: { id: routeParam(req.params.id), deleted: false, requesterIp: req.ip },
+    where: { id: routeParam(req.params.id), ...publicRequesterWhere(req) },
     include: {
       ...ticketInclude,
       comments: {
@@ -52,7 +61,7 @@ ticketRoutes.get("/public/:id", async (req, res) => {
 ticketRoutes.post("/public/:id/comments", async (req, res, next) => {
   try {
     const ticket = await prisma.ticket.findFirst({
-      where: { id: routeParam(req.params.id), deleted: false, requesterIp: req.ip },
+      where: { id: routeParam(req.params.id), ...publicRequesterWhere(req) },
       select: { id: true, requesterId: true }
     });
     if (!ticket) return res.status(404).json({ message: "Ticket no encontrado para este equipo" });
@@ -66,7 +75,7 @@ ticketRoutes.post("/public/:id/comments", async (req, res, next) => {
 ticketRoutes.use(authenticate);
 
 ticketRoutes.get("/", async (req, res) => {
-  const tickets = await prisma.ticket.findMany({ include: ticketInclude, orderBy: { createdAt: "desc" } });
+  const tickets = await prisma.ticket.findMany({ where: { deleted: false }, include: ticketInclude, orderBy: { createdAt: "desc" } });
   res.json(tickets);
 });
 
@@ -79,7 +88,7 @@ ticketRoutes.post("/", requirePermission("tickets:create"), async (req, res, nex
 });
 
 ticketRoutes.get("/:id", async (req, res) => {
-  const ticket = await prisma.ticket.findUnique({ where: { id: routeParam(req.params.id) }, include: ticketInclude });
+  const ticket = await prisma.ticket.findFirst({ where: { id: routeParam(req.params.id), deleted: false }, include: ticketInclude });
   if (!ticket) return res.status(404).json({ message: "Ticket no encontrado" });
   return res.json(ticket);
 });
@@ -87,6 +96,14 @@ ticketRoutes.get("/:id", async (req, res) => {
 ticketRoutes.patch("/:id", requirePermission("tickets:manage"), async (req, res, next) => {
   try {
     res.json(await updateTicket(routeParam(req.params.id), updateTicketSchema.parse(req.body), req.user!.id, req.ip));
+  } catch (error) {
+    next(error);
+  }
+});
+
+ticketRoutes.delete("/:id", requirePermission("tickets:manage"), async (req, res, next) => {
+  try {
+    res.json(await disableTicket(routeParam(req.params.id), req.user!.id, req.ip));
   } catch (error) {
     next(error);
   }
