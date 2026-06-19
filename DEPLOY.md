@@ -21,13 +21,13 @@ git push -u origin main
 4. Cuando termine el deploy, abre:
 
 ```text
-https://soporte-tickets.onrender.com
+https://soporte-tickets-ybpf.onrender.com
 ```
 
 El health check de la API queda en:
 
 ```text
-https://soporte-tickets.onrender.com/api/health
+https://soporte-tickets-ybpf.onrender.com/api/health
 ```
 
 ## 3. Datos importantes

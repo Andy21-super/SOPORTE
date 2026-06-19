@@ -2,7 +2,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { io } from "socket.io-client";
 import { getDeviceId } from "../hooks/useDeviceId";
 
-const renderURL = "https://soporte-tickets.onrender.com";
+const renderURL = "https://soporte-tickets-ybpf.onrender.com";
 const configuredApiURL = import.meta.env.VITE_API_URL;
 const configuredSocketURL = import.meta.env.VITE_SOCKET_URL;
 const isLocalConfigured = configuredApiURL?.includes("localhost") && import.meta.env.PROD;
