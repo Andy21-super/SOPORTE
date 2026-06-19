@@ -24,7 +24,9 @@ export const publicPriorities: CatalogItem[] = [
 export const publicSettings = [
   ["company_name", "CAMPAMENTOS DIOSES"],
   ["logo_url", `${import.meta.env.BASE_URL}campamentos-dioses-logo-transparent.png`],
+  ["public_title", "Panel publico de soporte TI"],
   ["public_subtitle", "Mesa de ayuda para operaciones, construcción y montaje metálico"],
+  ["public_description", "Registre incidencias, solicitudes de acceso, equipos, sistemas o conectividad. Sus tickets creados desde este computador aparecen aqui automaticamente."],
   ["public_background_url", "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80"]
 ].map(([key, value]) => ({ key, value }));
 

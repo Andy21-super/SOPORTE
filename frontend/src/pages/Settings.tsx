@@ -15,7 +15,9 @@ const defaults = {
   max_upload_mb: "10",
   theme_primary: "#12355b",
   theme_secondary: "#2f6f73",
+  public_title: "Panel publico de soporte TI",
   public_subtitle: "Mesa de ayuda para operaciones, construccion y montaje metalico",
+  public_description: "Registre incidencias, solicitudes de acceso, equipos, sistemas o conectividad. Sus tickets creados desde este computador aparecen aqui automaticamente.",
   public_background_url: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80"
 };
 
@@ -25,7 +27,11 @@ export function Settings() {
   const [settings, setSettings] = useState<Record<string, string>>(defaults);
   const mutation = useMutation({
     mutationFn: saveSettings,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-catalogs"] })
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-catalogs"] });
+      await queryClient.invalidateQueries({ queryKey: ["public-bootstrap"] });
+      window.location.reload();
+    }
   });
   const logoMutation = useMutation({
     mutationFn: uploadLogo,
@@ -53,7 +59,9 @@ export function Settings() {
           <Typography variant="h4" fontWeight={800}>Configuracion</Typography>
           <Typography color="text.secondary">Gestiona parametros generales, correo, marca, seguridad y carga de archivos.</Typography>
         </Box>
-        <Button variant="contained" startIcon={<SaveIcon />} onClick={() => mutation.mutate(settings)}>Guardar</Button>
+        <Button variant="contained" startIcon={<SaveIcon />} onClick={() => mutation.mutate(settings)} disabled={mutation.isPending}>
+          {mutation.isPending ? "Guardando..." : "Guardar"}
+        </Button>
       </Stack>
       {mutation.isSuccess && <Alert severity="success">Configuracion actualizada</Alert>}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, gap: 2 }}>
@@ -74,7 +82,16 @@ export function Settings() {
               />
             </Button>
             {logoMutation.isError && <Alert severity="error">No se pudo cargar el logo. Use PNG o JPG.</Alert>}
+            {settings.logo_url && <TextField label="URL del logo" value={settings.logo_url} onChange={(e) => setValue("logo_url", e.target.value)} />}
+            <TextField label="Titulo portal publico" value={settings.public_title} onChange={(e) => setValue("public_title", e.target.value)} />
             <TextField label="Subtitulo portal publico" value={settings.public_subtitle} onChange={(e) => setValue("public_subtitle", e.target.value)} />
+            <TextField
+              label="Descripcion portal publico"
+              multiline
+              minRows={3}
+              value={settings.public_description}
+              onChange={(e) => setValue("public_description", e.target.value)}
+            />
             <TextField label="URL fondo construccion/montaje" value={settings.public_background_url} onChange={(e) => setValue("public_background_url", e.target.value)} />
             <TextField label="Color primario" type="color" value={settings.theme_primary} onChange={(e) => setValue("theme_primary", e.target.value)} />
             <TextField label="Color secundario" type="color" value={settings.theme_secondary} onChange={(e) => setValue("theme_secondary", e.target.value)} />

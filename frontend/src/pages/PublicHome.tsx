@@ -106,7 +106,9 @@ export function PublicHome() {
   const settings = settingsMap(bootstrap?.settings);
   const companyName = settings.company_name ?? "CAMPAMENTOS DIOSES";
   const logoUrl = settings.logo_url;
+  const title = settings.public_title ?? "Panel publico de soporte TI";
   const subtitle = settings.public_subtitle ?? "Mesa de ayuda para operaciones, construccion y montaje metalico";
+  const description = settings.public_description ?? "Registre incidencias, solicitudes de acceso, equipos, sistemas o conectividad. Sus tickets creados desde este computador aparecen aqui automaticamente.";
   const backgroundUrl = settings.public_background_url ?? "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80";
   const mutation = useMutation({
     mutationFn: createPublicTicket,
@@ -184,9 +186,9 @@ export function PublicHome() {
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "1.05fr .95fr" }, gap: 3, alignItems: "start" }}>
           <Stack spacing={3}>
             <Box>
-              <Typography variant="h3" fontWeight={900} sx={{ maxWidth: 760 }}>Panel publico de soporte TI</Typography>
+              <Typography variant="h3" fontWeight={900} sx={{ maxWidth: 760 }}>{title}</Typography>
               <Typography sx={{ color: "rgba(255,255,255,.78)", maxWidth: 760, mt: 1 }}>
-                Registre incidencias, solicitudes de acceso, equipos, sistemas o conectividad. Sus tickets creados desde este computador aparecen aqui automaticamente.
+                {description}
               </Typography>
             </Box>
 
