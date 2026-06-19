@@ -97,6 +97,31 @@ export function addLocalPublicComment(ticketId: string, message: string) {
   return comment;
 }
 
+export function addLocalAdminComment(ticketId: string, message: string) {
+  const tickets = readLocalTickets();
+  const ticketIndex = tickets.findIndex((ticket) => ticket.id === ticketId);
+  if (ticketIndex === -1) throw new Error("Ticket no encontrado");
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : {
+    id: "local-admin",
+    email: "admin@local",
+    firstName: "Soporte",
+    lastName: "TI",
+    role: "Administrador",
+    permissions: []
+  };
+  const comment = {
+    id: crypto.randomUUID(),
+    message,
+    internal: false,
+    createdAt: new Date().toISOString(),
+    user
+  };
+  tickets[ticketIndex] = { ...tickets[ticketIndex], comments: [...tickets[ticketIndex].comments, comment] };
+  writeLocalTickets(tickets);
+  return comment;
+}
+
 export function createLocalPublicTicket(input: {
   firstName: string;
   lastName: string;

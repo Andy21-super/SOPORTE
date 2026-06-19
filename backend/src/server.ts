@@ -18,9 +18,14 @@ const app = express();
 app.set('trust proxy', true);
 const frontendDist = path.resolve(env.FRONTEND_DIST_DIR ?? path.join(process.cwd(), "../frontend/dist"));
 const frontendIndex = path.join(frontendDist, "index.html");
+const corsOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
+const corsOptions = {
+  origin: corsOrigins.length > 1 ? corsOrigins : corsOrigins[0],
+  credentials: true
+};
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
-app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb" }));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300 }));
 app.use("/uploads", express.static(path.resolve(uploadDir), {
@@ -44,7 +49,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: env.CORS_ORIGIN, credentials: true } });
+const io = new Server(server, { cors: corsOptions });
 setIo(io);
 
 io.on("connection", (socket) => {

@@ -14,7 +14,9 @@ function deviceId(req: Request) {
 
 function publicRequesterWhere(req: Request) {
   const id = deviceId(req);
-  return id ? { deleted: false, deviceId: id } : { deleted: false, requesterIp: req.ip };
+  return id
+    ? { deleted: false, OR: [{ deviceId: id }, { requesterIp: req.ip }] }
+    : { deleted: false, requesterIp: req.ip };
 }
 
 ticketRoutes.get("/public/by-ip", async (req, res) => {

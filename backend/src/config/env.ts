@@ -16,7 +16,8 @@ const schema = z.object({
   MAIL_FROM: z.string().default("Soporte <soporte@empresa.com>"),
   MAX_UPLOAD_MB: z.coerce.number().default(10),
   UPLOAD_DIR: z.string().optional(),
-  FRONTEND_DIST_DIR: z.string().optional()
+  FRONTEND_DIST_DIR: z.string().optional(),
+  BACKUP_DIR: z.string().optional()
 });
 
 export const env = schema.parse(process.env);

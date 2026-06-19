@@ -1,8 +1,21 @@
 import axios from "axios";
 import { io } from "socket.io-client";
 import { getDeviceId } from "../hooks/useDeviceId";
-const apiBaseURL = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? "/api" : "http://localhost:4000/api");
-const socketURL = import.meta.env.VITE_SOCKET_URL ?? (import.meta.env.PROD ? window.location.origin : "http://localhost:4000");
+
+const renderURL = "https://soporte-tickets.onrender.com";
+const configuredApiURL = import.meta.env.VITE_API_URL;
+const configuredSocketURL = import.meta.env.VITE_SOCKET_URL;
+const isLocalConfigured = configuredApiURL?.includes("localhost") && import.meta.env.PROD;
+const apiBaseURL = !isLocalConfigured && configuredApiURL
+  ? configuredApiURL
+  : import.meta.env.PROD
+    ? `${renderURL}/api`
+    : "http://localhost:4000/api";
+const socketURL = !isLocalConfigured && configuredSocketURL
+  ? configuredSocketURL
+  : import.meta.env.PROD
+    ? renderURL
+    : "http://localhost:4000";
 
 export const api = axios.create({
   baseURL: apiBaseURL

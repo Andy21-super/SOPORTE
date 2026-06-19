@@ -145,16 +145,31 @@ export function PublicHome() {
           <Stack direction="row" spacing={1.5} alignItems="center">
             {logoUrl ? (
               <Box
-                component="img"
-                src={logoUrl}
-                alt={companyName}
                 sx={{
-                  width: { xs: 96, sm: 128 },
-                  height: { xs: 64, sm: 82 },
-                  objectFit: "contain",
-                  filter: "drop-shadow(0 10px 18px rgba(0,0,0,.28))"
+                  width: { xs: 104, sm: 132 },
+                  height: { xs: 104, sm: 132 },
+                  borderRadius: "50%",
+                  bgcolor: "rgba(255,255,255,.96)",
+                  border: "3px solid rgba(245,158,11,.95)",
+                  boxShadow: "0 18px 40px rgba(0,0,0,.35), inset 0 0 0 6px rgba(18,53,91,.08)",
+                  display: "grid",
+                  placeItems: "center",
+                  overflow: "hidden",
+                  flex: "0 0 auto"
                 }}
-              />
+              >
+                <Box
+                  component="img"
+                  src={logoUrl}
+                  alt={companyName}
+                  sx={{
+                    width: "84%",
+                    height: "84%",
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 8px 12px rgba(0,0,0,.18))"
+                  }}
+                />
+              </Box>
             ) : null}
             <Box>
               <Typography variant="h5" fontWeight={900}>{companyName}</Typography>

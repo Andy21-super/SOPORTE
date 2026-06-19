@@ -7,19 +7,25 @@ services:
     plan: free
     healthCheckPath: /api/health
     autoDeployTrigger: commit
+    disk:
+      name: soporte-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 4000
       - key: DATABASE_URL
-        value: file:./soporte.db
+        value: file:/var/data/soporte.db
       - key: UPLOAD_DIR
-        value: ./uploads
+        value: /var/data/uploads
+      - key: BACKUP_DIR
+        value: /var/data/backups
       - key: FRONTEND_DIST_DIR
         value: /app/frontend/dist
       - key: CORS_ORIGIN
-        value: https://soporte-tickets.onrender.com
+        value: https://soporte-tickets.onrender.com,https://andy21-super.github.io
       - key: ACCESS_TOKEN_MINUTES
         value: 30
       - key: REFRESH_TOKEN_DAYS

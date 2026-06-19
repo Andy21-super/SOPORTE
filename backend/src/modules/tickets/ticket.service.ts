@@ -1,8 +1,11 @@
 import { prisma } from "../../database/prisma.js";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { randomUUID } from "crypto";
 import { getIo } from "../../sockets/io.js";
 import { audit } from "../audit/audit.service.js";
 import { notify } from "../notifications/notification.service.js";
+import { env } from "../../config/env.js";
 
 async function ticketNumber() {
   const year = new Date().getFullYear();
@@ -23,6 +26,14 @@ function normalizeText(value: string) {
 
 function projectFromArea(value: string) {
   return value.split(" - ")[0] || value;
+}
+
+async function backupTicket(ticket: unknown) {
+  const backupDir = env.BACKUP_DIR ?? path.resolve(process.cwd(), "backups");
+  await fs.mkdir(backupDir, { recursive: true });
+  const date = new Date().toISOString().slice(0, 10);
+  const file = path.join(backupDir, `tickets-${date}.jsonl`);
+  await fs.appendFile(file, `${JSON.stringify({ backedUpAt: new Date().toISOString(), ticket })}\n`, "utf8");
 }
 
 export async function createTicket(userId: string, input: { moduleId: string; categoryId: string; typeId?: string; priorityId: string; subject: string; description: string }, ip?: string) {
@@ -47,6 +58,7 @@ export async function createTicket(userId: string, input: { moduleId: string; ca
     },
     include: ticketInclude
   });
+  await backupTicket(ticket);
   await audit({ userId, ip, action: "CREATE", module: "tickets", description: `Ticket ${ticket.number} creado` });
   getIo()?.emit("ticket:created", ticket);
   return ticket;
@@ -118,6 +130,7 @@ export async function createPublicTicket(input: {
     include: ticketInclude
   });
 
+  await backupTicket(ticket);
   await audit({ userId: requester.id, ip, action: "CREATE_PUBLIC", module: "tickets", description: `Ticket publico ${ticket.number} creado` });
   getIo()?.emit("ticket:created", ticket);
   return ticket;

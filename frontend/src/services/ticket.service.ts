@@ -3,6 +3,7 @@ import { getDeviceId } from "../hooks/useDeviceId";
 import type { CatalogItem, DashboardResponse, Ticket } from "../interfaces";
 import {
   addLocalPublicComment,
+  addLocalAdminComment,
   createLocalPublicTicket,
   disableLocalTicket,
   enableLocalTicket,
@@ -129,7 +130,7 @@ export async function addComment(ticketId: string, input: { message: string; noS
     const { data } = await api.post(`/tickets/${ticketId}/comments`, input);
     return data;
   } catch {
-    return addLocalPublicComment(ticketId, input.message);
+    return addLocalAdminComment(ticketId, input.message);
   }
 }
 
