@@ -3,7 +3,7 @@ import { prisma } from "../../database/prisma.js";
 import { upload } from "../../config/upload.js";
 import { routeParam } from "../../helpers/params.js";
 import { authenticate, requirePermission } from "../../middlewares/auth.js";
-import { addComment, createPublicTicket, createTicket, disableTicket, ticketInclude, updateTicket } from "./ticket.service.js";
+import { addComment, createPublicTicket, createTicket, disableTicket, enableTicket, ticketInclude, updateTicket } from "./ticket.service.js";
 import { commentSchema, createTicketSchema, publicTicketSchema, updateTicketSchema } from "./ticket.validators.js";
 
 export const ticketRoutes = Router();
@@ -75,7 +75,8 @@ ticketRoutes.post("/public/:id/comments", async (req, res, next) => {
 ticketRoutes.use(authenticate);
 
 ticketRoutes.get("/", async (req, res) => {
-  const tickets = await prisma.ticket.findMany({ where: { deleted: false }, include: ticketInclude, orderBy: { createdAt: "desc" } });
+  const includeDisabled = req.query.includeDisabled === "true";
+  const tickets = await prisma.ticket.findMany({ where: includeDisabled ? {} : { deleted: false }, include: ticketInclude, orderBy: { createdAt: "desc" } });
   res.json(tickets);
 });
 
@@ -88,7 +89,7 @@ ticketRoutes.post("/", requirePermission("tickets:create"), async (req, res, nex
 });
 
 ticketRoutes.get("/:id", async (req, res) => {
-  const ticket = await prisma.ticket.findFirst({ where: { id: routeParam(req.params.id), deleted: false }, include: ticketInclude });
+  const ticket = await prisma.ticket.findUnique({ where: { id: routeParam(req.params.id) }, include: ticketInclude });
   if (!ticket) return res.status(404).json({ message: "Ticket no encontrado" });
   return res.json(ticket);
 });
@@ -104,6 +105,14 @@ ticketRoutes.patch("/:id", requirePermission("tickets:manage"), async (req, res,
 ticketRoutes.delete("/:id", requirePermission("tickets:manage"), async (req, res, next) => {
   try {
     res.json(await disableTicket(routeParam(req.params.id), req.user!.id, req.ip));
+  } catch (error) {
+    next(error);
+  }
+});
+
+ticketRoutes.patch("/:id/enable", requirePermission("tickets:manage"), async (req, res, next) => {
+  try {
+    res.json(await enableTicket(routeParam(req.params.id), req.user!.id, req.ip));
   } catch (error) {
     next(error);
   }

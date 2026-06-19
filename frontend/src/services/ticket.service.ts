@@ -5,6 +5,8 @@ import {
   addLocalPublicComment,
   createLocalPublicTicket,
   disableLocalTicket,
+  enableLocalTicket,
+  getLocalAdminTicket,
   getLocalAdminTickets,
   getLocalPublicTicket,
   getLocalPublicTickets,
@@ -64,7 +66,7 @@ export async function getPublicTicket(id: string) {
 
 export async function getTickets() {
   try {
-    const { data } = await api.get<Ticket[]>("/tickets");
+    const { data } = await api.get<Ticket[]>("/tickets?includeDisabled=true");
     return data;
   } catch {
     return getLocalAdminTickets();
@@ -76,7 +78,7 @@ export async function getTicket(id: string) {
     const { data } = await api.get<Ticket>(`/tickets/${id}`);
     return data;
   } catch {
-    const ticket = getLocalPublicTicket(id);
+    const ticket = getLocalAdminTicket(id);
     if (!ticket) throw new Error("Ticket no encontrado");
     return ticket;
   }
@@ -110,6 +112,15 @@ export async function disableTicket(ticketId: string) {
     return data;
   } catch {
     return disableLocalTicket(ticketId);
+  }
+}
+
+export async function enableTicket(ticketId: string) {
+  try {
+    const { data } = await api.patch<Ticket>(`/tickets/${ticketId}/enable`);
+    return data;
+  } catch {
+    return enableLocalTicket(ticketId);
   }
 }
 

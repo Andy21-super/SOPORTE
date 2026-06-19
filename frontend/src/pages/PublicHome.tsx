@@ -256,6 +256,9 @@ export function PublicHome() {
                 </TextField>
               )} />
               <TextField label="Descripcion de la incidencia o solicitud TI" multiline minRows={5} {...register("description")} error={!!errors.description} helperText={errors.description?.message} />
+              <Alert severity="info" icon={<ChatBubbleOutlineIcon />}>
+                Despues de registrar, abra su ticket en "Mis tickets de este equipo" para chatear con el area de TI y ver las respuestas.
+              </Alert>
               <Button type="submit" variant="contained" size="large" startIcon={<SendIcon />} disabled={mutation.isPending}>
                 Registrar y descargar constancia
               </Button>

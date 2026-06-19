@@ -55,16 +55,27 @@ export function getLocalPublicTickets() {
 }
 
 export function getLocalAdminTickets() {
-  return readLocalTickets().filter((ticket) => !ticket.deleted);
+  return readLocalTickets();
 }
 
 export function getLocalPublicTicket(id: string) {
   return readLocalTickets().find((ticket) => ticket.id === id && !ticket.deleted);
 }
 
+export function getLocalAdminTicket(id: string) {
+  return readLocalTickets().find((ticket) => ticket.id === id);
+}
+
 export function disableLocalTicket(id: string) {
   const tickets = readLocalTickets();
   const updated = tickets.map((ticket) => ticket.id === id ? { ...ticket, deleted: true } : ticket);
+  writeLocalTickets(updated);
+  return updated.find((ticket) => ticket.id === id);
+}
+
+export function enableLocalTicket(id: string) {
+  const tickets = readLocalTickets();
+  const updated = tickets.map((ticket) => ticket.id === id ? { ...ticket, deleted: false } : ticket);
   writeLocalTickets(updated);
   return updated.find((ticket) => ticket.id === id);
 }

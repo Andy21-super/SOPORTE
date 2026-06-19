@@ -166,6 +166,17 @@ export async function disableTicket(ticketId: string, userId: string, ip?: strin
   return ticket;
 }
 
+export async function enableTicket(ticketId: string, userId: string, ip?: string) {
+  const ticket = await prisma.ticket.update({
+    where: { id: ticketId },
+    data: { deleted: false },
+    include: ticketInclude
+  });
+  await audit({ userId, ip, action: "ENABLE", module: "tickets", description: `Ticket ${ticket.number} habilitado` });
+  getIo()?.emit("ticket:enabled", ticket);
+  return ticket;
+}
+
 export const ticketInclude = {
   requester: true,
   module: true,
